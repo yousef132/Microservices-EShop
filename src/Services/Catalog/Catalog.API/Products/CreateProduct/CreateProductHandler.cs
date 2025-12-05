@@ -1,5 +1,5 @@
-﻿using Catalog.API.Models;
-using MediatR;
+﻿using BuildingBlocks.CQRS;
+using Catalog.API.Models;
 
 namespace Catalog.API.Products.CreateProduct
 {
@@ -9,24 +9,31 @@ namespace Catalog.API.Products.CreateProduct
         List<string> Categories,
         decimal Price,
         string Imagefile
-    ) : IRequest<CreateProductResult>;
+    ) : ICommand<CreateProductResult>;
 
     public record CreateProductResult(Guid Id);
 
-    internal class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, CreateProductResult>
+    internal class CreateProductCommandHandler : ICommandHandler<CreateProductCommand, CreateProductResult>
     {
         public CreateProductCommandHandler()
         {
 
         }
-        public Task<CreateProductResult> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+        public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
         {
 
             var product = new Product
             {
-
+                Name = command.Name,
+                Description = command.Description,
+                Categories = command.Categories,
+                Price = command.Price,
+                Imagefile = command.Imagefile
             };
-            throw new NotImplementedException();
+            // TODO :: save to db
+            return new CreateProductResult(Guid.NewGuid());
         }
     }
+
+
 }
