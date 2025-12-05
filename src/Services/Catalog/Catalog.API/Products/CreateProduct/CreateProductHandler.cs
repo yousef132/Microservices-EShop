@@ -1,5 +1,4 @@
-﻿using BuildingBlocks.CQRS;
-using Catalog.API.Models;
+﻿using FluentValidation;
 
 namespace Catalog.API.Products.CreateProduct
 {
@@ -8,19 +7,27 @@ namespace Catalog.API.Products.CreateProduct
         string Description,
         List<string> Categories,
         decimal Price,
-        string Imagefile
+        string ImageFile
     ) : ICommand<CreateProductResult>;
 
     public record CreateProductResult(Guid Id);
 
-    internal class CreateProductCommandHandler : ICommandHandler<CreateProductCommand, CreateProductResult>
+    public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
     {
-        public CreateProductCommandHandler()
+        public CreateProductCommandValidator()
         {
-
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
+            RuleFor(x => x.Categories).NotEmpty().WithMessage("Category is required");
+            RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
+            RuleFor(x => x.Price).GreaterThan(0).WithMessage("Price must be greater than 0");
         }
+    }
+    internal class CreateProductCommandHandler(IDocumentSession session) : ICommandHandler<CreateProductCommand, CreateProductResult>
+    {
+
         public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
         {
+
 
             var product = new Product
             {
@@ -28,10 +35,14 @@ namespace Catalog.API.Products.CreateProduct
                 Description = command.Description,
                 Categories = command.Categories,
                 Price = command.Price,
-                Imagefile = command.Imagefile
+                ImageFile = command.ImageFile
             };
+
+            session.Store(product);
+            await session.SaveChangesAsync(cancellationToken);
+
             // TODO :: save to db
-            return new CreateProductResult(Guid.NewGuid());
+            return new CreateProductResult(product.Id);
         }
     }
 
