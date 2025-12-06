@@ -1,4 +1,6 @@
 using BuildingBlocks.Behaviors;
+using BuildingBlocks.Exceptions.Handler;
+using Catalog.API.Data;
 using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,12 @@ builder.Services.AddCarter();
 builder.Services.AddValidatorsFromAssembly(assembly);
 builder.Services.AddEndpointsApiExplorer(); // Required for minimal APIs
 builder.Services.AddSwaggerGen(); // Add Swagger generator
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.InitializeMartenWith<CatalogInitialData>();// seeding data
+
+}
 var app = builder.Build();
 // Enable Swagger middleware
 if (app.Environment.IsDevelopment())
@@ -28,4 +36,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapCarter();
+app.UseExceptionHandler(opt => { });
 app.Run();
