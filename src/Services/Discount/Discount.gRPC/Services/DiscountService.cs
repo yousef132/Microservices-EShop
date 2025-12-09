@@ -1,34 +1,78 @@
 using Discount.gRPC;
+using Discount.gRPC.Data;
+using Discount.gRPC.Models;
 using Grpc.Core;
+using Mapster;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Discount.gRPC.Services
 {
-    public class DiscountService : DiscountProtoService.DiscountProtoServiceBase // Business logic layer 
+    public class DiscountService (ILogger<DiscountService> _logger, DiscountContext _context) : DiscountProtoService.DiscountProtoServiceBase // Business logic layer 
     {
-        private readonly ILogger<DiscountService> _logger;
-        public DiscountService(ILogger<DiscountService> logger)
+        
+        public override async Task<CouponModel> CreateDiscount(CreateDiscountRequest request, ServerCallContext context)
         {
-            _logger = logger;
+            var coupon = request.Coupon.Adapt<Coupon>();
+            if (coupon is null)
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid request object."));
+
+            _context.Coupons.Add(coupon);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Discount is successfully created. ProductName : {ProductName}", coupon.ProductName);
+
+            var couponModel = coupon.Adapt<CouponModel>();
+            return couponModel;
         }
 
-        public override Task<CouponModel> CreateDiscount(CreateDiscountRequest request, ServerCallContext context)
+        public override async Task<CouponModel> GetDiscount(GetDiscountRequest request, ServerCallContext context)
         {
-            return base.CreateDiscount(request, context);
+            var coupons = await _context.Coupons.ToListAsync();
+            var coupon =  await _context.Coupons.FirstOrDefaultAsync(d => d.ProductName == request.ProductName);
+            _logger.LogInformation("Discount is retrieved for ProductName : {ProductName}, Amount : {Amount}", 
+                request.ProductName, coupon?.Amount);
+            if (coupon == null)
+                coupon = new Models.Coupon
+                {
+                    ProductName = "No Discount",
+                    Amount = 0,
+                    Description = "No Discount Desc",
+                };
+            var couponModel = coupon.Adapt<CouponModel>();
+            return couponModel;
         }
 
-        public override Task<CouponModel> GetDiscount(GetDiscountRequest request, ServerCallContext context)
+        public override async Task<CouponModel> UpdateDiscount(UpdateDiscountRequest request, ServerCallContext context)
         {
-            return base.GetDiscount(request, context);
+            var coupon = request.Coupon.Adapt<Coupon>();
+            if (coupon is null)
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid request object."));
+
+            _context.Coupons.Update(coupon);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Discount is successfully updated. ProductName : {ProductName}", coupon.ProductName);
+
+            var couponModel = coupon.Adapt<CouponModel>();
+            return couponModel;
         }
 
-        public override Task<CouponModel> UpdateDiscount(UpdateDiscountRequest request, ServerCallContext context)
+        public override async Task<DeleteDiscountResponse> DeleteDiscount(DeleteDiscountRequest request, ServerCallContext context)
         {
-            return base.UpdateDiscount(request, context);
-        }
+            var coupon = await _context
+           .Coupons
+           .FirstOrDefaultAsync(x => x.ProductName == request.ProductName);
 
-        public override Task<DeleteDiscountResponse> DeleteDiscount(DeleteDiscountRequest request, ServerCallContext context)
-        {
-            return base.DeleteDiscount(request, context);
+            if (coupon is null)
+                throw new RpcException(new Status(StatusCode.NotFound, $"Discount with ProductName={request.ProductName} is not found."));
+
+            _context.Coupons.Remove(coupon);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Discount is successfully deleted. ProductName : {ProductName}", request.ProductName);
+
+            return new DeleteDiscountResponse { Success = true };
         }
     }
 }
