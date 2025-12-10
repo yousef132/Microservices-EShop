@@ -23,10 +23,12 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Protobuf Include="..\..\..\Services\Discount\Discount.gRPC\Protos\Discount.proto" GrpcServices="Client">
-      <Link>Protos\Discount.proto</Link>
-    </Protobuf>
-  </ItemGroup>
+	<ItemGroup>
+		<Protobuf Include="..\..\..\Services\Discount\Discount.gRPC\Protos\Discount.proto"
+				  GrpcServices="Client"
+				  OutputDir="Generated\DiscountClient">
+			<Link>Protos\Discount.proto</Link>
+		</Protobuf>
+	</ItemGroup>
 
 </Project>
