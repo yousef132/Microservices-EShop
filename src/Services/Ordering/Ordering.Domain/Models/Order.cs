@@ -1,5 +1,6 @@
 ﻿using Ordering.Domain.Abstractions;
 using Ordering.Domain.Enums;
+using Ordering.Domain.Events;
 using Ordering.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 namespace Ordering.Domain.Models
 {
 
-    //Aggregate root : Order
+    //Aggregate root : Order => it is responsible for managing it's own state and it's assocciated order items
     //Entity : OrderItem
     //Value Object : Address, Money
     public class Order : Aggregate<OrderId>
@@ -26,7 +27,7 @@ namespace Ordering.Domain.Models
         public Address BillingAddress { get; private set; } = default!;
         public Payment Payment { get; private set; } = default!;
         public OrderStatus Status { get; private set; } = OrderStatus.Pending;
-        public decimal TotalAmount 
+        public decimal TotalPrice 
         { 
             get 
             {
@@ -34,10 +35,51 @@ namespace Ordering.Domain.Models
             }
             private set { }
         }
-    }
-    public class Product : Entity<Guid>
-    {
-        public string Name { get; private set; } = default!;
-        public decimal Price { get; private set; } =default!;
+        public static Order Create(OrderId id, CustomerId customerId, OrderName orderName, Address shippingAddress, Address billingAddress, Payment payment)
+        {
+            var order = new Order
+            {
+                Id = id,
+                CustomerId = customerId,
+                OrderName = orderName,
+                ShippingAddress = shippingAddress,
+                BillingAddress = billingAddress,
+                Payment = payment,
+                Status = OrderStatus.Pending
+            };
+
+            order.AddDomainEvent(new OrderCreatedEvent(order));
+
+            return order;
+        }
+
+        public void Update(OrderName orderName, Address shippingAddress, Address billingAddress, Payment payment, OrderStatus status)
+        {
+            OrderName = orderName;
+            ShippingAddress = shippingAddress;
+            BillingAddress = billingAddress;
+            Payment = payment;
+            Status = status;
+
+            AddDomainEvent(new OrderUpdatedEvent(this));
+        }
+
+        public void Add(ProductId productId, int quantity, decimal price)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(price);
+
+            var orderItem = new OrderItem(Id, productId, quantity, price);
+            _orderItems.Add(orderItem);
+        }
+
+        public void Remove(ProductId productId)
+        {
+            var orderItem = _orderItems.FirstOrDefault(x => x.ProductId == productId);
+            if (orderItem is not null)
+            {
+                _orderItems.Remove(orderItem);
+            }
+        }
     }
 }
