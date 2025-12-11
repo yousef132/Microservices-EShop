@@ -14,6 +14,10 @@
     <PackageReference Include="Carter" Version="8.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.49.0" />
     <PackageReference Include="Marten" Version="8.16.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
@@ -24,9 +28,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="..\..\..\Services\Discount\Discount.gRPC\Protos\Discount.proto"
-				  GrpcServices="Client"
-				  OutputDir="Generated\DiscountClient">
+		<Protobuf Include="..\..\..\Services\Discount\Discount.gRPC\Protos\Discount.proto" GrpcServices="Client" OutputDir="Generated\DiscountClient">
 			<Link>Protos\Discount.proto</Link>
 		</Protobuf>
 	</ItemGroup>

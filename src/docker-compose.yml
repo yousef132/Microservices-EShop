@@ -3,9 +3,10 @@ services:
     image: postgres:latest
   basketdb:
     image: postgres:latest
-
   distributedcache:
     image: redis:latest
+  orderdb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
 
 
   catalog.api:
