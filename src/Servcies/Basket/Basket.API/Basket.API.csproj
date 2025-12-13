@@ -24,13 +24,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Messaging\BuildingBlocks.Messaging.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="..\..\..\Services\Discount\Discount.gRPC\Protos\Discount.proto" GrpcServices="Client" OutputDir="Generated\DiscountClient">
+		<Protobuf Include="..\..\..\Services\Discount\Discount.gRPC\Protos\Discount.proto" GrpcServices="Client" >
 			<Link>Protos\Discount.proto</Link>
 		</Protobuf>
 	</ItemGroup>
+
 
 </Project>
