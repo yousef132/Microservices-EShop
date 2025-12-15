@@ -34,9 +34,16 @@ services:
       context: .
       dockerfile: Service/Ordering/Ordering.API/Dockerfile
 
+  api.gayway:
+    image: ${DOCKER_REGISTRY-}apigayway
+    build:
+      context: .
+      dockerfile: APIGatway/API.Gayway/Dockerfile
+
 volumes:
   postgres_catalog:
   postgres_basket:
+
 
 
 
