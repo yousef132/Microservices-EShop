@@ -40,11 +40,12 @@ services:
       context: .
       dockerfile: APIGatway/API.Gayway/Dockerfile
 
+  shpping.web:
+    image: ${DOCKER_REGISTRY-}shppingweb
+    build:
+      context: .
+      dockerfile: Shpping.Web/Dockerfile
+
 volumes:
   postgres_catalog:
   postgres_basket:
-
-
-
-
-
